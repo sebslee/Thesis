@@ -34,7 +34,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Custom Packages
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[]{algorithm2e}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
 
+\algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}%
 % TODO: add own packages here
 
 
@@ -144,14 +148,14 @@ At this point is important to mention that an IP can be verified at various leve
 \begin{itemize}
 \item IP or Block level: tests functionality of a single design block. Bus Functional Models are nromally used to mimic the parts that interact with it.
 \item Cluster level : A collection of blocks that work closely together, such as a Memory Subsystem. 
-\item System On Chip (SoC) level: Normally the highest level of integration containing all the design blocks.
+\item System On Chip (SoC) or Full Chip (FC) level: Normally the highest level of integration containing all the design blocks.
 \end{itemize}
 As we go higher on the verification level, simulation speed is greatly reduced. Therefore, exhaustive testing should be tested at lower levels, leaving only interface and use-case testing to Cluster and SoC verification activities. 
-Up to this point we have described how the problem of generating significant stimulus has been reliefed partially by novel methodologies and Hardware Verification Languages but, even if we achieve 100\% of coverage goals can we claim our design is bug-free? Sadly, no. Generating all possible stimulus is in most practical cases virtually impossible. Consider a 32-bit adder, consisting of two 32-bit wide inputs. To verify every single possible input we would need:
+Up to this point we have described how the problem of generating significant stimulus has been reliefed partially by novel methodologies and Hardware Verification Languages. Generating all possible stimulus is in most practical cases virtually impossible. Consider a 32-bit adder, consisting of two 32-bit wide inputs. To verify every single possible input we would need:
 \begin{equation}
 \#input\_vectors = (2^{32}) * (2^{32}) = 1.84 x 10^{19}
 \end{equation} 
-Exercising all this input vectors becomes unpractial as design sizes become bigger. Fortunately, there exist a different approach.
+Exercising all this input vectors becomes unpractial as design sizes become bigger. 
 \pagebreak
 \subsection{A briefer history of Formal Verification}
 The dynamic verification approach has a so-called Deep-first nature. It seeks to put the system on a specific state and check its response by predicting it. The disadvantage of this method is that it can only verify if the output is correct for a given stimuli. In formal verification this mindset is reversed, the verification engineer starts by specifying the desired behavior in a formal language and lets the formal checker prove or disproves it. The user is not concerned with the way the stimuli is generated at all. Formal verification therefore adopts a Breadth-first approach, that is, it checks if the output is valid for all possible input vectors. 
@@ -173,4 +177,56 @@ On the other hand, model checking, the main subject of formal verification, has 
 \item An algorithm to prove exhaustively and conclusively if the model meets the specification under any possible valid condition.
 \end{itemize}
 A property about a design describes in a formal way a part of the functionality that a design must hold or avoid. We will describe three approaches to property checking: first we will describe algorithms that rely on graph-based algorithms, then we will cover bounded model checking basics, interval property checking and finally their relation with state-of-the-art model checking tools. 
+\subsection{Temporal Structure and Computation Tree}
+One approach to formal property checking is model checking using computation tree. The matematical model used to represent the circuit is called a Kripke Structure, which is basically a state diagram without inputs and outputs and its transition function depends only on the present state. Matematically a Kripke structure is defined as 4-tuple:
+\begin{equation}
+K = ( S , S_0 , T , A , L )
+\end{equation}  
+Where S represent the set of states, S$_0$ the set of initial states , T is the transition relation that maps a present state to a next one, A consists of a set of atomic formulas that can be true or false and L is a labeling function to link each state with propositional variables that are held true on it. By unrolling a Kripke structure we can trace out all paths from the initial states, if it contains loops this paths will be infinite, resulting in a tree structure. Figx ilustrates this concept :
+The language used on this approach is called Computation Tree Logic (CTL). The semantics of the language are based on the Kripke model.
+\begin{itemize}
+\item  Atomic formulas : f ,g , h .. can be true or false
+\item  Propositional operators : not  , and  , or 
+\item  Model operators : $\exists$ (E), there exists a path or it is possible , $\forall$ (A) , for all paths or always. 
+\item Temporal operators : X (next) , F (Future) , G (Globally) , U (Until).
+\end{itemize}
+Combined this constructs provide an expressive language to describe temporal properties of circuits. Examples of common used CTL formulas include:
+\begin{itemize}
+\item AGp : Usually called safety property, where p is a condition that must never happen such as a forbidden state.
+\item AGEFp : For all paths, it holds globally that there exists a path where p is valid. This property is usually called liveness property.
+\item EFp : There exists a path where p is valid. 
+\end{itemize}
+As shown above, CTL provides means to describe certain properties that a circuit is expected to hold. Having a model of the system and a language, the task is now to define an algorithm that give a Kripke model with state set S and a CTL formula f evaluate all the states on S where f is valid. Reported agorithms \cite{thesis:ipc} rely on an algorithm called Fixed point iteration, which bsaically computes the set of states R that can be reached in a Kripke structure K from the intial state S$_0$. It is based on two sub-procedures:
+\begin{itemize}
+\item reach(S$_0$) : Compute all the states reachable from initial state. 
+\item xreach(A) : Compute all the immediate succesors or next states for the set of states A.
+\end{itemize}
+
+\begin{algorithm} [H]
+\SetAlgoLined
+\KwResult{Write here the result }
+ initialization\;
+ \While{While condition}{
+  instructions\;
+  \eIf{condition}{
+   instructions1\;
+   instructions2\;
+   }{
+   instructions3\;
+  }
+ }
+ \caption{How to write algorithms}
+\end{algorithm}
+
+\begin{algorithmic}
+\SetAlgoLined
+  %\caption{Fixed point iteration}
+  \item  R$_{it}$ = $\emptyset$\;
+  \Do
+    \State R = R$_{it}$ \;
+    \State R$_{it}$ = S$_0$ $\cup$ xreach\(R\)\; 
+  \doWhile{$R_{it} == R $} 
+ % \caption{reach algorithm}
+\end{algorithmic}
+
 \end{document}
